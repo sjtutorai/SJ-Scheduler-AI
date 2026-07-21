@@ -598,13 +598,17 @@ export default function App() {
       <div className="relative min-h-screen w-full">
         <PremiumBackground />
         <LandingPage
-          onEnterApp={() => {
+          onEnterApp={(mode) => {
             setIsLandingActive(false);
-            const registered = JSON.parse(localStorage.getItem("registered_schools") || "[]");
-            if (registered.length === 0) {
-              setAuthScreen("register");
+            if (mode === "login" || mode === "register") {
+              setAuthScreen(mode);
             } else {
-              setAuthScreen("login");
+              const registered = JSON.parse(localStorage.getItem("registered_schools") || "[]");
+              if (registered.length === 0) {
+                setAuthScreen("register");
+              } else {
+                setAuthScreen("login");
+              }
             }
           }}
         />
@@ -624,6 +628,9 @@ export default function App() {
             onCancel={() => {
               setIsLandingActive(true);
             }}
+            onSwitchToLogin={() => {
+              setAuthScreen("login");
+            }}
           />
         </div>
       );
@@ -638,6 +645,9 @@ export default function App() {
             }}
             onOpenRegister={() => {
               setAuthScreen("register");
+            }}
+            onCancel={() => {
+              setIsLandingActive(true);
             }}
           />
         </div>

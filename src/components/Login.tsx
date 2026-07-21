@@ -14,16 +14,18 @@ import {
   ArrowRight,
   ShieldAlert,
   KeyRound,
-  RefreshCw
+  RefreshCw,
+  X
 } from "lucide-react";
 import { hashPassword } from "../utils/security";
 
 interface LoginProps {
   onLoginSuccess: (schoolData: any) => void;
   onOpenRegister: () => void;
+  onCancel?: () => void;
 }
 
-export default function Login({ onLoginSuccess, onOpenRegister }: LoginProps) {
+export default function Login({ onLoginSuccess, onOpenRegister, onCancel }: LoginProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -352,6 +354,18 @@ export default function Login({ onLoginSuccess, onOpenRegister }: LoginProps) {
     <div className="min-h-screen bg-transparent flex items-center justify-center p-6 text-slate-200">
       <div className="w-full max-w-md bg-slate-900/50 border border-white/10 rounded-2xl shadow-2xl p-8 space-y-6 relative overflow-hidden backdrop-blur-xl">
         
+        {/* Close Button */}
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            title="Exit Login"
+            className="absolute top-4 right-4 text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-lg transition-all cursor-pointer z-10"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+
         {/* Decorative elements */}
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-cyan-500 to-indigo-600"></div>
 

@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 
 interface LandingPageProps {
-  onEnterApp: () => void;
+  onEnterApp: (mode?: "login" | "register") => void;
 }
 
 export default function LandingPage({ onEnterApp }: LandingPageProps) {
@@ -236,13 +236,21 @@ export default function LandingPage({ onEnterApp }: LandingPageProps) {
             ))}
           </div>
 
-          <button
-            onClick={onEnterApp}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-md shadow-indigo-600/15 transition-all flex items-center gap-1.5 cursor-pointer"
-          >
-            <span>Launch Console</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => onEnterApp("login")}
+              className="px-3.5 py-1.5 border border-slate-700 hover:bg-slate-800 hover:text-white text-slate-300 rounded-lg text-xs font-bold transition-all cursor-pointer"
+            >
+              Sign In
+            </button>
+            <button
+              onClick={() => onEnterApp("register")}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-md shadow-indigo-600/15 transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>Register School</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -265,7 +273,7 @@ export default function LandingPage({ onEnterApp }: LandingPageProps) {
 
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
             <button
-              onClick={onEnterApp}
+              onClick={() => onEnterApp()}
               className="w-full sm:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-indigo-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               <Cpu className="w-4 h-4 text-indigo-200" />

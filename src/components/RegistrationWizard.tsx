@@ -29,9 +29,10 @@ import { hashPassword } from "../utils/security";
 interface RegistrationWizardProps {
   onRegisterComplete: (registeredData: any) => void;
   onCancel: () => void;
+  onSwitchToLogin?: () => void;
 }
 
-export default function RegistrationWizard({ onRegisterComplete, onCancel }: RegistrationWizardProps) {
+export default function RegistrationWizard({ onRegisterComplete, onCancel, onSwitchToLogin }: RegistrationWizardProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -647,13 +648,27 @@ export default function RegistrationWizard({ onRegisterComplete, onCancel }: Reg
                   {currentStep === 6 && "Verify & Finalize"}
                 </h2>
               </div>
-              <button
-                type="button"
-                onClick={onCancel}
-                className="text-xs text-slate-400 hover:text-slate-600 font-bold"
-              >
-                Exit Signup
-              </button>
+              <div className="flex items-center gap-3 shrink-0">
+                {onSwitchToLogin && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={onSwitchToLogin}
+                      className="text-xs text-indigo-400 hover:text-indigo-300 font-bold cursor-pointer transition-colors"
+                    >
+                      Sign In instead
+                    </button>
+                    <span className="text-slate-700 select-none">|</span>
+                  </>
+                )}
+                <button
+                  type="button"
+                  onClick={onCancel}
+                  className="text-xs text-slate-400 hover:text-slate-300 font-bold cursor-pointer transition-colors"
+                >
+                  Exit Setup
+                </button>
+              </div>
             </div>
 
             {errorMsg && (
@@ -666,6 +681,18 @@ export default function RegistrationWizard({ onRegisterComplete, onCancel }: Reg
             {/* --- STEP 1: SCHOOL INFO --- */}
             {currentStep === 1 && (
               <div className="space-y-4 text-xs">
+                {onSwitchToLogin && (
+                  <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] font-medium text-left">
+                    <span className="text-slate-300">Already registered your institution or have credentials?</span>
+                    <button
+                      type="button"
+                      onClick={onSwitchToLogin}
+                      className="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[10px] font-bold shadow-md shadow-indigo-600/10 transition-all cursor-pointer whitespace-nowrap self-start sm:self-center"
+                    >
+                      Sign In to Console
+                    </button>
+                  </div>
+                )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">School Name *</label>
