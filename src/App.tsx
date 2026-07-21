@@ -74,22 +74,13 @@ import Login from "./components/Login";
 import RegistrationWizard from "./components/RegistrationWizard";
 import PremiumBackground from "./components/PremiumBackground";
 import { useEffect } from "react";
-import {
-  auth,
-  db,
-  doc,
-  getDoc,
-  setDoc,
-  isSignInWithEmailLink,
-  signInWithEmailLink,
-  signOut,
-  onAuthStateChanged
-} from "./firebase";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isLandingActive, setIsLandingActive] = useState(true);
+  const [isLandingActive, setIsLandingActive] = useState(() => {
+    return !localStorage.getItem("active_school_session");
+  });
 
   // Central Application States (Shared context simulation)
   const [schoolInfo, setSchoolInfo] = useState<SchoolInfo>(initialSchoolInfo);
@@ -107,103 +98,11 @@ export default function App() {
   const [activities, setActivities] = useState<RecentActivity[]>(initialRecentActivities);
 
   // Session / Authentication state
-  const [currentSchoolSession, setCurrentSchoolSession] = useState<any | null>(null);
+  const [currentSchoolSession, setCurrentSchoolSession] = useState<any | null>(() => {
+    const active = localStorage.getItem("active_school_session");
+    return active ? JSON.parse(active) : null;
+  });
   const [authScreen, setAuthScreen] = useState<"login" | "register" | null>(null);
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
-  const [firebaseUser, setFirebaseUser] = useState<any | null>(null);
-
-  // Handle incoming passwordless email sign-in link
-  useEffect(() => {
-    const handleEmailLinkSignIn = async () => {
-      if (isSignInWithEmailLink(auth, window.location.href)) {
-        setIsAuthLoading(true);
-        let email = localStorage.getItem("emailForSignIn");
-        if (!email) {
-          email = window.prompt("Please confirm your email address to complete signing in:");
-        }
-        if (email) {
-          try {
-            await signInWithEmailLink(auth, email, window.location.href);
-            localStorage.removeItem("emailForSignIn");
-            // Remove the URL parameters so they don't trigger again on reload
-            window.history.replaceState({}, document.title, window.location.pathname);
-          } catch (err: any) {
-            console.error("Error signing in with email link:", err);
-            alert(err.message || "The sign-in link was invalid or expired.");
-          }
-        }
-        setIsAuthLoading(false);
-      }
-    };
-    handleEmailLinkSignIn();
-  }, []);
-
-  // Sync Firebase authentication with user profiles and active school sessions
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setFirebaseUser(user);
-      if (user) {
-        setIsAuthLoading(true);
-        try {
-          // Check/create user document in Firestore users/{uid}
-          const userDocRef = doc(db, "users", user.uid);
-          const userDocSnap = await getDoc(userDocRef);
-
-          let schoolId = "";
-
-          if (!userDocSnap.exists()) {
-            await setDoc(userDocRef, {
-              uid: user.uid,
-              fullName: user.displayName || "",
-              email: user.email || "",
-              photoURL: user.photoURL || "",
-              provider: user.providerData[0]?.providerId || "email-link",
-              schoolId: "",
-              createdAt: new Date().toISOString()
-            });
-          } else {
-            const userData = userDocSnap.data();
-            schoolId = userData.schoolId || "";
-          }
-
-          if (schoolId) {
-            // Load school details from Firestore schools/{schoolId}
-            const schoolDocRef = doc(db, "schools", schoolId);
-            const schoolDocSnap = await getDoc(schoolDocRef);
-            if (schoolDocSnap.exists()) {
-              const schoolData = schoolDocSnap.data();
-              // Cache school session locally
-              localStorage.setItem("active_school_session", JSON.stringify(schoolData));
-              setCurrentSchoolSession(schoolData);
-              setIsLandingActive(false);
-              setAuthScreen(null);
-            } else {
-              // School ID exists but school document not found, route to wizard
-              setIsLandingActive(false);
-              setAuthScreen("register");
-            }
-          } else {
-            // No school profile registered, route to wizard
-            setIsLandingActive(false);
-            setAuthScreen("register");
-          }
-        } catch (error) {
-          console.error("Error syncing authenticated user profile:", error);
-        } finally {
-          setIsAuthLoading(false);
-        }
-      } else {
-        // Logged out
-        localStorage.removeItem("active_school_session");
-        setCurrentSchoolSession(null);
-        setIsLandingActive(true);
-        setAuthScreen(null);
-        setIsAuthLoading(false);
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
 
   // Load school session states on mount / change
   useEffect(() => {
@@ -696,27 +595,6 @@ export default function App() {
     }
   };
 
-  if (isAuthLoading) {
-    return (
-      <div className="min-h-screen w-full bg-slate-950 flex flex-col items-center justify-center p-6 text-slate-200">
-        <PremiumBackground />
-        <div className="relative z-10 text-center space-y-4 max-w-sm">
-          <img
-            src="https://i.ibb.co/fGyH2Tck/SJ-Schedular-AI-Logo.png"
-            alt="SJ Scheduler AI Logo"
-            className="w-16 h-16 object-contain mx-auto rounded-xl shadow-lg shadow-indigo-600/30 animate-pulse"
-            referrerPolicy="no-referrer"
-          />
-          <div className="space-y-1.5">
-            <h2 className="text-lg font-black text-white uppercase tracking-wider">Verifying Session...</h2>
-            <p className="text-xs text-slate-400 font-semibold uppercase tracking-widest">Please wait while we secure your connection</p>
-          </div>
-          <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mt-4"></div>
-        </div>
-      </div>
-    );
-  }
-
   if (isLandingActive) {
     return (
       <div className="relative min-h-screen w-full">
@@ -880,12 +758,7 @@ export default function App() {
               <span>Public Portal</span>
             </button>
             <button
-              onClick={async () => {
-                try {
-                  await signOut(auth);
-                } catch (err) {
-                  console.error("Error signing out:", err);
-                }
+              onClick={() => {
                 localStorage.removeItem("active_school_session");
                 setCurrentSchoolSession(null);
                 setIsLandingActive(true);

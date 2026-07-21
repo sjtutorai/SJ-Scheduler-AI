@@ -25,8 +25,6 @@ import {
   Info
 } from "lucide-react";
 import { hashPassword } from "../utils/security";
-import { auth, db, doc, setDoc, updateDoc, collection } from "../firebase";
-import { query, where, getDocs } from "firebase/firestore";
 
 interface RegistrationWizardProps {
   onRegisterComplete: (registeredData: any) => void;
@@ -209,10 +207,9 @@ export default function RegistrationWizard({ onRegisterComplete, onCancel, onSwi
       
       setIsSubmitting(true);
       try {
-        const schoolsRef = collection(db, "schools");
-        const q = query(schoolsRef, where("udiseNumber", "==", udiseNumber.trim()));
-        const querySnapshot = await getDocs(q);
-        if (!querySnapshot.empty) {
+        const existing: any[] = JSON.parse(localStorage.getItem("registered_schools") || "[]");
+        const isDuplicate = existing.some((sch) => sch.udiseNumber === udiseNumber.trim());
+        if (isDuplicate) {
           setErrorMsg("A school with this UDISE Number is already registered.");
           setIsSubmitting(false);
           return;
@@ -331,10 +328,8 @@ export default function RegistrationWizard({ onRegisterComplete, onCancel, onSwi
       }
 
       // Re-verify duplicate UDISE at submit
-      const schoolsRef = collection(db, "schools");
-      const q = query(schoolsRef, where("udiseNumber", "==", trimmedUdise));
-      const querySnapshot = await getDocs(q);
-      if (!querySnapshot.empty) {
+      const existing: any[] = JSON.parse(localStorage.getItem("registered_schools") || "[]");
+      if (existing.some((sch) => sch.udiseNumber === trimmedUdise)) {
         setErrorMsg("A school with this UDISE Number is already registered.");
         setCurrentStep(1);
         setIsSubmitting(false);
@@ -342,25 +337,16 @@ export default function RegistrationWizard({ onRegisterComplete, onCancel, onSwi
       }
 
       // Generate unique Registration number based on total registered schools count
-      const allSchoolsSnapshot = await getDocs(schoolsRef);
-      const lastNum = allSchoolsSnapshot.size;
+      const lastNum = existing.length;
       const initials = extractInitials(schoolName);
       const paddedNum = String(lastNum + 1).padStart(6, "0");
       const regNum = `${initials}-${paddedNum}`;
 
-      const user = auth.currentUser;
-      if (!user) {
-        setErrorMsg("You must be authenticated to register a school.");
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Generate school ref and ID
-      const schoolRef = doc(collection(db, "schools"));
-      const schoolId = schoolRef.id;
+      const defaultPass = trimmedUdise;
+      const hashedPassword = hashPassword(defaultPass);
 
       const schoolProfile = {
-        schoolId,
+        schoolId: regNum,
         regNumber: regNum,
         registrationNumber: regNum,
         schoolName: schoolName.trim(),
@@ -425,25 +411,21 @@ export default function RegistrationWizard({ onRegisterComplete, onCancel, onSwi
         totalStudents,
         totalTeachers,
         totalNonTeaching,
-        createdBy: user.uid,
+        passwordHash: hashedPassword,
+        isPasswordChanged: false,
         createdAt: new Date().toISOString()
       };
 
-      // Save school to Firestore
-      await setDoc(schoolRef, schoolProfile);
-
-      // Update user doc with this schoolId
-      const userRef = doc(db, "users", user.uid);
-      await updateDoc(userRef, {
-        schoolId: schoolId
-      });
+      // Save registration securely in database (localStorage list)
+      existing.push(schoolProfile);
+      localStorage.setItem("registered_schools", JSON.stringify(existing));
 
       // Clear session & set completed response
       setRegResult({
         schoolName: schoolName.trim(),
         regNumber: regNum,
         username: regNum,
-        defaultPassword: "No password required (signed in with Google / Email Link)",
+        defaultPassword: defaultPass,
         academicYear
       });
 
