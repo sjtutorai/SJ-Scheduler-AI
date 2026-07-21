@@ -25,6 +25,8 @@ import {
   Info
 } from "lucide-react";
 import { hashPassword } from "../utils/security";
+import { auth, db, doc, setDoc, updateDoc, collection } from "../firebase";
+import { query, where, getDocs } from "firebase/firestore";
 
 interface RegistrationWizardProps {
   onRegisterComplete: (registeredData: any) => void;
@@ -35,6 +37,7 @@ interface RegistrationWizardProps {
 export default function RegistrationWizard({ onRegisterComplete, onCancel, onSwitchToLogin }: RegistrationWizardProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // --- Step 1: School Information ---
   const [schoolName, setSchoolName] = useState("Springdale Academy");
@@ -191,7 +194,7 @@ export default function RegistrationWizard({ onRegisterComplete, onCancel, onSwi
     return initials.substring(0, 5);
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     setErrorMsg(null);
 
     if (currentStep === 1) {
@@ -203,12 +206,21 @@ export default function RegistrationWizard({ onRegisterComplete, onCancel, onSwi
         setErrorMsg("UDISE Number is required.");
         return;
       }
-      // Check for unique UDISE code in already registered schools
-      const existing: any[] = JSON.parse(localStorage.getItem("registered_schools") || "[]");
-      const isDuplicate = existing.some((sch) => sch.udiseNumber === udiseNumber.trim());
-      if (isDuplicate) {
-        setErrorMsg("A school with this UDISE Number is already registered.");
-        return;
+      
+      setIsSubmitting(true);
+      try {
+        const schoolsRef = collection(db, "schools");
+        const q = query(schoolsRef, where("udiseNumber", "==", udiseNumber.trim()));
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          setErrorMsg("A school with this UDISE Number is already registered.");
+          setIsSubmitting(false);
+          return;
+        }
+      } catch (err: any) {
+        console.error("Error checking UDISE uniqueness:", err);
+      } finally {
+        setIsSubmitting(false);
       }
     }
 
@@ -306,97 +318,145 @@ export default function RegistrationWizard({ onRegisterComplete, onCancel, onSwi
   };
 
   // Final Submission & School Registration Number generation
-  const handleSubmitRegistration = () => {
+  const handleSubmitRegistration = async () => {
     setErrorMsg(null);
+    setIsSubmitting(true);
 
-    // Re-verify duplicate UDISE at submit
-    const existing: any[] = JSON.parse(localStorage.getItem("registered_schools") || "[]");
-    if (existing.some((sch) => sch.udiseNumber === udiseNumber.trim())) {
-      setErrorMsg("A school with this UDISE Number is already registered.");
-      setCurrentStep(1);
-      return;
+    try {
+      const trimmedUdise = udiseNumber.trim();
+      if (!trimmedUdise) {
+        setErrorMsg("UDISE Number is required.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Re-verify duplicate UDISE at submit
+      const schoolsRef = collection(db, "schools");
+      const q = query(schoolsRef, where("udiseNumber", "==", trimmedUdise));
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        setErrorMsg("A school with this UDISE Number is already registered.");
+        setCurrentStep(1);
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Generate unique Registration number based on total registered schools count
+      const allSchoolsSnapshot = await getDocs(schoolsRef);
+      const lastNum = allSchoolsSnapshot.size;
+      const initials = extractInitials(schoolName);
+      const paddedNum = String(lastNum + 1).padStart(6, "0");
+      const regNum = `${initials}-${paddedNum}`;
+
+      const user = auth.currentUser;
+      if (!user) {
+        setErrorMsg("You must be authenticated to register a school.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Generate school ref and ID
+      const schoolRef = doc(collection(db, "schools"));
+      const schoolId = schoolRef.id;
+
+      const schoolProfile = {
+        schoolId,
+        regNumber: regNum,
+        registrationNumber: regNum,
+        schoolName: schoolName.trim(),
+        udiseNumber: trimmedUdise,
+        schoolType,
+        schoolAddress: schoolAddress.trim(),
+        city: city.trim(),
+        taluk: taluk.trim(),
+        district: district.trim(),
+        state: state.trim(),
+        pinCode: pinCode.trim(),
+        schoolEmail: schoolEmail.trim(),
+        schoolPhone: schoolPhone.trim(),
+        address: {
+          schoolAddress: schoolAddress.trim(),
+          city: city.trim(),
+          taluk: taluk.trim(),
+          district: district.trim(),
+          state: state.trim(),
+          pinCode: pinCode.trim(),
+          schoolEmail: schoolEmail.trim(),
+          schoolPhone: schoolPhone.trim()
+        },
+        principalName: principalName.trim(),
+        timings: {
+          schoolStartTime,
+          schoolEndTime,
+          assemblyTime,
+          assemblyDuration,
+          periodDuration,
+          periodsCount,
+          recessTime,
+          recessDuration,
+          lunchStartTime,
+          lunchDuration,
+          afternoonRecessTime,
+          afternoonRecessDuration,
+          saturdayWorking,
+          saturdayStartTime,
+          saturdayEndTime,
+          saturdayPeriodDuration,
+          saturdayPeriodsCount
+        },
+        infrastructure: {
+          totalBlocks,
+          totalFloors,
+          totalRooms,
+          totalExamHalls,
+          benchesPerRoom,
+          studentsPerBench,
+          computerLabs,
+          scienceLabs,
+          libraryCount,
+          staffRooms
+        },
+        academicYear,
+        workingDays,
+        classes: availableClasses,
+        availableClasses,
+        sections: availableSections,
+        availableSections,
+        totalStudents,
+        totalTeachers,
+        totalNonTeaching,
+        createdBy: user.uid,
+        createdAt: new Date().toISOString()
+      };
+
+      // Save school to Firestore
+      await setDoc(schoolRef, schoolProfile);
+
+      // Update user doc with this schoolId
+      const userRef = doc(db, "users", user.uid);
+      await updateDoc(userRef, {
+        schoolId: schoolId
+      });
+
+      // Clear session & set completed response
+      setRegResult({
+        schoolName: schoolName.trim(),
+        regNumber: regNum,
+        username: regNum,
+        defaultPassword: "No password required (signed in with Google / Email Link)",
+        academicYear
+      });
+
+      // Callback to register completion with school data
+      onRegisterComplete(schoolProfile);
+
+      setCurrentStep(7);
+    } catch (err: any) {
+      console.error("Error creating school profile:", err);
+      setErrorMsg(err.message || "Could not register your school profile. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    // Generate unique Registration number
-    const initials = extractInitials(schoolName);
-    const lastNum = existing.length + 1;
-    const paddedNum = String(lastNum).padStart(6, "0");
-    const regNum = `${initials}-${paddedNum}`;
-
-    const defaultPass = udiseNumber.trim();
-    const hashedPassword = hashPassword(defaultPass);
-
-    const schoolProfile = {
-      regNumber: regNum,
-      udiseNumber: udiseNumber.trim(),
-      schoolName: schoolName.trim(),
-      schoolType,
-      schoolAddress,
-      city,
-      taluk,
-      district,
-      state,
-      pinCode,
-      schoolEmail,
-      schoolPhone,
-      principalName,
-      academicYear,
-      workingDays,
-      availableClasses,
-      availableSections,
-      totalStudents,
-      totalTeachers,
-      totalNonTeaching,
-      infrastructure: {
-        totalBlocks,
-        totalFloors,
-        totalRooms,
-        totalExamHalls,
-        benchesPerRoom,
-        studentsPerBench,
-        computerLabs,
-        scienceLabs,
-        libraryCount,
-        staffRooms
-      },
-      timings: {
-        schoolStartTime,
-        schoolEndTime,
-        assemblyTime,
-        assemblyDuration,
-        periodDuration,
-        periodsCount,
-        recessTime,
-        recessDuration,
-        lunchStartTime,
-        lunchDuration,
-        afternoonRecessTime,
-        afternoonRecessDuration,
-        saturdayWorking,
-        saturdayStartTime,
-        saturdayEndTime,
-        saturdayPeriodDuration,
-        saturdayPeriodsCount
-      },
-      passwordHash: hashedPassword,
-      isPasswordChanged: false,
-      registeredAt: new Date().toISOString()
-    };
-
-    // Save registration securely in database (localStorage list)
-    existing.push(schoolProfile);
-    localStorage.setItem("registered_schools", JSON.stringify(existing));
-
-    // Clear session & set completed response
-    setRegResult({
-      schoolName: schoolName.trim(),
-      regNumber: regNum,
-      username: regNum,
-      defaultPassword: defaultPass,
-      academicYear
-    });
-
-    setCurrentStep(7);
   };
 
   const handlePrint = () => {
@@ -1484,7 +1544,8 @@ export default function RegistrationWizard({ onRegisterComplete, onCancel, onSwi
               <button
                 type="button"
                 onClick={handleBack}
-                className="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                disabled={isSubmitting}
+                className="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 <span>Previous Step</span>
@@ -1497,19 +1558,33 @@ export default function RegistrationWizard({ onRegisterComplete, onCancel, onSwi
               <button
                 type="button"
                 onClick={handleNext}
-                className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ml-auto"
+                disabled={isSubmitting}
+                className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ml-auto disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <span>Continue</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                {isSubmitting ? (
+                  <span>Checking...</span>
+                ) : (
+                  <>
+                    <span>Continue</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </>
+                )}
               </button>
             ) : (
               <button
                 type="button"
                 onClick={handleSubmitRegistration}
-                className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-black shadow-md shadow-indigo-600/15 hover:shadow-indigo-600/25 transition-all flex items-center gap-1.5 cursor-pointer ml-auto"
+                disabled={isSubmitting}
+                className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-black shadow-md shadow-indigo-600/15 hover:shadow-indigo-600/25 transition-all flex items-center gap-1.5 cursor-pointer ml-auto disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <span>Confirm & Register</span>
-                <CheckCircle className="w-4 h-4 text-indigo-200" />
+                {isSubmitting ? (
+                  <span>Registering...</span>
+                ) : (
+                  <>
+                    <span>Confirm & Register</span>
+                    <CheckCircle className="w-4 h-4 text-indigo-200" />
+                  </>
+                )}
               </button>
             )}
           </div>
