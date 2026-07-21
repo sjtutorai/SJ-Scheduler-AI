@@ -178,17 +178,17 @@ export default function TeacherManager({
   return (
     <div className="space-y-6" id="teacher-management-tab">
       {/* Search and Filters */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
           {/* Search bar */}
           <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               placeholder="Search by faculty name, subject or Employee ID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all"
+              className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 text-xs bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
@@ -196,7 +196,7 @@ export default function TeacherManager({
           <select
             value={subjectFilter}
             onChange={(e) => setSubjectFilter(e.target.value)}
-            className="px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 cursor-pointer"
+            className="px-3 py-2 rounded-lg border border-slate-200 text-xs bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer font-medium"
           >
             <option value="All">All Subjects</option>
             {subjectsList.map((sub) => (
@@ -210,56 +210,58 @@ export default function TeacherManager({
         {/* Action Button */}
         <button
           onClick={handleOpenCreate}
-          className="px-4 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-medium hover:bg-slate-800 transition-all flex items-center gap-2 cursor-pointer self-end md:self-auto"
+          className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5 cursor-pointer self-end md:self-auto"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-3.5 h-3.5" />
           <span>Add Faculty</span>
         </button>
       </div>
 
       {/* Teachers Bento Grid / Table */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-100 text-xs font-bold text-slate-500 uppercase tracking-wider font-mono">
-                <th className="py-4 px-6">ID & Profile</th>
-                <th className="py-4 px-6">Primary Subject</th>
-                <th className="py-4 px-6">Department & Qualification</th>
-                <th className="py-4 px-6">Workload Limits</th>
-                <th className="py-4 px-6">Availability Constraints</th>
-                <th className="py-4 px-6 text-right">Actions</th>
+              <tr className="bg-slate-50 border-b border-slate-100 text-[10px] font-bold text-slate-500 uppercase tracking-wider font-sans">
+                <th className="py-3 px-6">ID & Profile</th>
+                <th className="py-3 px-6">Primary Subject</th>
+                <th className="py-3 px-6">Department & Qualification</th>
+                <th className="py-3 px-6">Workload Limits</th>
+                <th className="py-3 px-6">Availability Constraints</th>
+                <th className="py-3 px-6 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-sm font-sans text-slate-700">
+            <tbody className="divide-y divide-slate-100 text-xs font-sans text-slate-700">
               {filteredTeachers.length > 0 ? (
                 filteredTeachers.map((t) => (
                   <tr key={t.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="py-4 px-6">
-                      <div className="font-mono text-xs text-slate-400 font-semibold">{t.employeeId}</div>
+                    <td className="py-3 px-6">
+                      <div className="font-mono text-[10px] text-slate-400 font-semibold">{t.employeeId}</div>
                       <div className="font-bold text-slate-900">{t.name}</div>
-                      <div className="text-xs text-slate-500">{t.email}</div>
+                      <div className="text-[10px] text-slate-500 font-medium">{t.email}</div>
                     </td>
-                    <td className="py-4 px-6 font-medium text-slate-900">
-                      <span className="bg-blue-50 border border-blue-100 text-blue-700 px-2.5 py-1 rounded-lg text-xs font-semibold">
+                    <td className="py-3 px-6 font-semibold text-slate-800">
+                      <span className="bg-indigo-50 border border-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
                         {t.subject}
                       </span>
                     </td>
-                    <td className="py-4 px-6">
-                      <div className="font-medium text-slate-800">{t.department}</div>
-                      <div className="text-xs text-slate-400 leading-tight">{t.qualification}</div>
+                    <td className="py-3 px-6">
+                      <div className="font-semibold text-slate-800">{t.department}</div>
+                      <div className="text-[10px] text-slate-400 leading-tight font-medium">{t.qualification}</div>
                       <div className="text-[10px] text-slate-500 font-mono mt-0.5">{t.experience} Years Experience</div>
                     </td>
-                    <td className="py-4 px-6">
-                      <div className="text-xs">
-                        Max periods: <span className="font-mono font-bold text-slate-900">{t.maxPeriodsPerDay}/day</span>
+                    <td className="py-3 px-6 text-xs text-slate-700 font-medium">
+                      <div className="flex items-center gap-1">
+                        <span>Max periods:</span>
+                        <span className="font-mono font-bold text-slate-900 bg-slate-50 px-1 py-0.5 border border-slate-200 rounded">{t.maxPeriodsPerDay}/day</span>
                       </div>
-                      <div className="text-xs mt-0.5">
-                        Max duties: <span className="font-mono font-bold text-slate-900">{t.maxDutiesPerDay}/day</span>
+                      <div className="flex items-center gap-1 mt-1">
+                        <span>Max duties:</span>
+                        <span className="font-mono font-bold text-slate-900 bg-slate-50 px-1 py-0.5 border border-slate-200 rounded">{t.maxDutiesPerDay}/day</span>
                       </div>
-                      <div className="text-[11px] text-slate-500 font-mono mt-1">Block: {t.preferredBlock}</div>
+                      <div className="text-[10px] text-slate-500 font-mono mt-1">Block: {t.preferredBlock}</div>
                     </td>
-                    <td className="py-4 px-6">
+                    <td className="py-3 px-6">
                       {t.unavailableDays.length > 0 ? (
                         <div className="flex flex-wrap gap-1">
                           {t.unavailableDays.map((d) => (
@@ -269,7 +271,7 @@ export default function TeacherManager({
                           ))}
                         </div>
                       ) : (
-                        <span className="text-xs text-emerald-600 font-medium">Fully Available</span>
+                        <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Fully Available</span>
                       )}
                       {t.leaveDetails && (
                         <div className="text-[10px] text-amber-600 font-mono mt-1 flex items-center gap-1">
@@ -278,17 +280,17 @@ export default function TeacherManager({
                         </div>
                       )}
                     </td>
-                    <td className="py-4 px-6 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+                    <td className="py-3 px-6 text-right">
+                      <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => handleOpenEdit(t)}
-                          className="p-1.5 hover:bg-slate-100 text-slate-500 rounded-lg transition-all cursor-pointer"
+                          className="p-1 hover:bg-slate-100 text-slate-500 rounded transition-colors cursor-pointer"
                         >
                           <Edit className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleDelete(t.id)}
-                          className="p-1.5 hover:bg-rose-50 text-rose-500 rounded-lg transition-all cursor-pointer"
+                          className="p-1 hover:bg-rose-50 text-rose-500 rounded transition-colors cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -298,7 +300,7 @@ export default function TeacherManager({
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-slate-400 font-sans">
+                  <td colSpan={6} className="py-8 text-center text-slate-400 font-sans text-xs">
                     No faculty directories matched your search.
                   </td>
                 </tr>
@@ -311,14 +313,14 @@ export default function TeacherManager({
       {/* Manual Modal Drawer */}
       {showModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-xl max-w-2xl w-full overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-              <h3 className="font-bold text-slate-800 font-sans">
+          <div className="bg-white rounded-xl border border-slate-200 shadow-xl max-w-2xl w-full overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-5 border-b border-slate-150 flex justify-between items-center bg-slate-50">
+              <h3 className="font-bold text-slate-800 text-sm tracking-tight uppercase">
                 {editingTeacher ? "Edit Faculty Credentials" : "Register New Faculty"}
               </h3>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-lg transition-all"
+                className="p-1 text-slate-400 hover:bg-slate-150 rounded transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -327,25 +329,25 @@ export default function TeacherManager({
             <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 flex-1">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Faculty Full Name</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Faculty Full Name</label>
                   <input
                     type="text"
                     required
                     value={formFields.name}
                     onChange={(e) => setFormFields({ ...formFields, name: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-medium bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     placeholder="e.g. Ramesh Kumar"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Employee ID Code</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Employee ID Code</label>
                   <input
                     type="text"
                     required
                     value={formFields.employeeId}
                     onChange={(e) => setFormFields({ ...formFields, employeeId: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-mono font-medium bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     placeholder="e.g. EMP-202601"
                   />
                 </div>
@@ -353,11 +355,11 @@ export default function TeacherManager({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Primary Subject Name</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Primary Subject Name</label>
                   <select
                     value={formFields.subject}
                     onChange={(e) => setFormFields({ ...formFields, subject: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none cursor-pointer"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-medium bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
                   >
                     <option value="Mathematics">Mathematics</option>
                     <option value="General Science">General Science</option>
@@ -370,13 +372,13 @@ export default function TeacherManager({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Academic Department</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Academic Department</label>
                   <input
                     type="text"
                     required
                     value={formFields.department}
                     onChange={(e) => setFormFields({ ...formFields, department: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-medium bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     placeholder="e.g. Science & Math"
                   />
                 </div>
@@ -384,77 +386,77 @@ export default function TeacherManager({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Highest Qualification</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Highest Qualification</label>
                   <input
                     type="text"
                     required
                     value={formFields.qualification}
                     onChange={(e) => setFormFields({ ...formFields, qualification: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-medium bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     placeholder="e.g. M.Sc., B.Ed."
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Teaching Experience (Years)</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Teaching Experience (Years)</label>
                   <input
                     type="number"
                     value={formFields.experience}
                     onChange={(e) => setFormFields({ ...formFields, experience: parseInt(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none font-mono"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-mono font-medium bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Phone Number</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Phone Number</label>
                   <input
                     type="tel"
                     value={formFields.phone}
                     onChange={(e) => setFormFields({ ...formFields, phone: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none font-mono"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-mono font-medium bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Email Address</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Email Address</label>
                   <input
                     type="email"
                     value={formFields.email}
                     onChange={(e) => setFormFields({ ...formFields, email: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none font-mono"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-mono font-medium bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Max Periods / Day</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Max Periods / Day</label>
                   <input
                     type="number"
                     value={formFields.maxPeriodsPerDay}
                     onChange={(e) => setFormFields({ ...formFields, maxPeriodsPerDay: parseInt(e.target.value) || 5 })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none font-mono"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-mono font-medium bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Max Duties / Day</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Max Duties / Day</label>
                   <input
                     type="number"
                     value={formFields.maxDutiesPerDay}
                     onChange={(e) => setFormFields({ ...formFields, maxDutiesPerDay: parseInt(e.target.value) || 1 })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none font-mono"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-mono font-medium bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Preferred Block</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Preferred Block</label>
                   <select
                     value={formFields.preferredBlock}
                     onChange={(e) => setFormFields({ ...formFields, preferredBlock: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none cursor-pointer"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-medium bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
                   >
                     <option value="A Block">A Block</option>
                     <option value="B Block">B Block</option>
@@ -465,8 +467,8 @@ export default function TeacherManager({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1.5">Unavailable Teaching Days</label>
-                <div className="flex flex-wrap gap-2">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Unavailable Teaching Days</label>
+                <div className="flex flex-wrap gap-1.5">
                   {weekdays.map((day) => {
                     const isSelected = formFields.unavailableDays.includes(day);
                     return (
@@ -474,10 +476,10 @@ export default function TeacherManager({
                         key={day}
                         type="button"
                         onClick={() => toggleUnavailableDay(day)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
                           isSelected
                             ? "bg-rose-600 border-rose-600 text-white"
-                            : "bg-white border-slate-200 text-slate-500 hover:bg-slate-50"
+                            : "bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100"
                         } cursor-pointer`}
                       >
                         {day}
@@ -488,27 +490,27 @@ export default function TeacherManager({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1">Planned Leave Details (dates/reasons)</label>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Planned Leave Details (dates/reasons)</label>
                 <textarea
                   rows={2}
                   value={formFields.leaveDetails}
                   onChange={(e) => setFormFields({ ...formFields, leaveDetails: e.target.value })}
                   placeholder="e.g. Leave planned on July 25th for family event"
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none resize-none"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-medium bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
                 />
               </div>
 
-              <div className="pt-4 border-t border-slate-100 flex justify-end gap-2">
+              <div className="pt-4 border-t border-slate-150 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-medium transition-all cursor-pointer"
+                  className="px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-lg text-xs font-semibold border border-slate-200 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-medium transition-all cursor-pointer"
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors cursor-pointer"
                 >
                   {editingTeacher ? "Save Changes" : "Register Faculty"}
                 </button>

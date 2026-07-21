@@ -164,15 +164,15 @@ export default function BlockRoomManager({
   return (
     <div className="space-y-6" id="infrastructure-tab">
       {/* Selector and Subnav */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-        <div className="flex bg-slate-100 p-1 rounded-xl">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div className="flex bg-slate-100 p-1 rounded-lg">
           <button
             onClick={() => {
               setActiveTab("rooms");
               setSearchTerm("");
             }}
-            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              activeTab === "rooms" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-800"
+            className={`px-4 py-2 rounded text-xs font-bold transition-all cursor-pointer ${
+              activeTab === "rooms" ? "bg-white text-slate-900 shadow-xs" : "text-slate-500 hover:text-slate-800"
             }`}
           >
             Manage Rooms & Halls
@@ -182,8 +182,8 @@ export default function BlockRoomManager({
               setActiveTab("blocks");
               setSearchTerm("");
             }}
-            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              activeTab === "blocks" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-800"
+            className={`px-4 py-2 rounded text-xs font-bold transition-all cursor-pointer ${
+              activeTab === "blocks" ? "bg-white text-slate-900 shadow-xs" : "text-slate-500 hover:text-slate-800"
             }`}
           >
             Manage Wings & Blocks
@@ -193,19 +193,19 @@ export default function BlockRoomManager({
         {/* Search */}
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <div className="relative flex-1 sm:flex-initial">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               placeholder={activeTab === "rooms" ? "Search Room / Hall..." : "Search Block name..."}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full sm:w-64 pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 text-xs rounded-xl focus:outline-none"
+              className="w-full sm:w-64 pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 text-xs rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800"
             />
           </div>
 
           <button
             onClick={activeTab === "rooms" ? handleOpenRoomCreate : handleOpenBlockCreate}
-            className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-medium hover:bg-slate-800 transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+            className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add {activeTab === "rooms" ? "Room" : "Block"}</span>
@@ -219,13 +219,13 @@ export default function BlockRoomManager({
           {filteredRooms.map((r) => (
             <div
               key={r.id}
-              className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4 relative flex flex-col justify-between group hover:shadow-md transition-all"
+              className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4 relative flex flex-col justify-between group hover:shadow-md transition-all"
             >
               <div className="space-y-3">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="font-mono font-bold text-lg text-slate-950">Room {r.roomNumber}</h3>
-                    <p className="text-[11px] text-slate-400 font-medium font-sans">
+                    <h3 className="font-mono font-bold text-base text-slate-800">Room {r.roomNumber}</h3>
+                    <p className="text-[10px] text-slate-400 font-semibold font-sans uppercase tracking-wider">
                       {r.blockName} • Floor {r.floor}
                     </p>
                   </div>
@@ -233,50 +233,50 @@ export default function BlockRoomManager({
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => handleOpenRoomEdit(r)}
-                      className="p-1.5 text-slate-400 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-all cursor-pointer"
+                      className="p-1 text-slate-400 hover:text-slate-800 hover:bg-slate-50 rounded transition-colors cursor-pointer"
                     >
                       <Edit className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleRoomDelete(r.id)}
-                      className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all cursor-pointer"
+                      className="p-1 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded transition-colors cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-xl text-center border border-slate-100 font-mono">
+                <div className="grid grid-cols-3 gap-1 bg-slate-50 p-2.5 rounded-lg text-center border border-slate-200 font-mono">
                   <div>
-                    <div className="text-[10px] text-slate-400">Seats</div>
-                    <div className="font-bold text-slate-800 text-sm">{r.capacity}</div>
+                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Seats</div>
+                    <div className="font-bold text-slate-800 text-xs mt-0.5">{r.capacity}</div>
                   </div>
                   <div>
-                    <div className="text-[10px] text-slate-400">Benches</div>
-                    <div className="font-bold text-slate-800 text-sm">{r.numberOfBenches}</div>
+                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Benches</div>
+                    <div className="font-bold text-slate-800 text-xs mt-0.5">{r.numberOfBenches}</div>
                   </div>
                   <div>
-                    <div className="text-[10px] text-slate-400">Per Bench</div>
-                    <div className="font-bold text-slate-800 text-sm">{r.studentsPerBench}</div>
+                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider font-sans">Per Bench</div>
+                    <div className="font-bold text-slate-800 text-xs mt-0.5">{r.studentsPerBench}</div>
                   </div>
                 </div>
               </div>
 
               {/* Badges / features indicators */}
-              <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-50">
+              <div className="flex flex-wrap gap-1 pt-2 border-t border-slate-100">
                 {r.isSmartClassroom && (
-                  <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-0.5 rounded text-[9px] font-bold">
+                  <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider">
                     Smart Board
                   </span>
                 )}
                 {r.isLab && (
-                  <span className="bg-indigo-50 text-indigo-700 border border-indigo-100 px-2 py-0.5 rounded text-[9px] font-bold">
+                  <span className="bg-indigo-50 text-indigo-700 border border-indigo-100 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider">
                     Lab Area
                   </span>
                 )}
                 {r.isComputerLab && (
-                  <span className="bg-cyan-50 text-cyan-700 border border-cyan-100 px-2 py-0.5 rounded text-[9px] font-bold">
-                    Computer PC
+                  <span className="bg-cyan-50 text-cyan-700 border border-cyan-100 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider">
+                    PC Lab
                   </span>
                 )}
               </div>
@@ -288,30 +288,30 @@ export default function BlockRoomManager({
           {filteredBlocks.map((b) => (
             <div
               key={b.id}
-              className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4 relative flex flex-col justify-between"
+              className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4 relative flex flex-col justify-between"
             >
               <div className="space-y-2">
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-slate-100 text-slate-800 rounded-xl">
-                      <Layout className="w-5 h-5" />
+                    <div className="p-2 bg-slate-50 border border-slate-200 text-slate-700 rounded-lg">
+                      <Layout className="w-4 h-4" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-slate-900 font-sans">{b.name}</h3>
-                      <p className="text-xs text-slate-400">{b.numberOfFloors} Floor Levels Wing</p>
+                      <h3 className="font-bold text-slate-800 text-sm">{b.name}</h3>
+                      <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">{b.numberOfFloors} Floor Levels Wing</p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => handleOpenBlockEdit(b)}
-                      className="p-1.5 text-slate-400 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-all cursor-pointer"
+                      className="p-1 text-slate-400 hover:text-slate-800 hover:bg-slate-50 rounded transition-colors cursor-pointer"
                     >
                       <Edit className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleBlockDelete(b.id)}
-                      className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all cursor-pointer"
+                      className="p-1 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded transition-colors cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -324,7 +324,7 @@ export default function BlockRoomManager({
                   </div>
                   <div className="text-slate-500">
                     Rooms Associated:{" "}
-                    <span className="font-mono text-slate-700 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
+                    <span className="font-mono text-slate-600 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200 font-semibold">
                       {b.rooms.join(", ") || "None"}
                     </span>
                   </div>
@@ -338,14 +338,14 @@ export default function BlockRoomManager({
       {/* Room Modal */}
       {showRoomModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-xl max-w-md w-full overflow-hidden flex flex-col">
-            <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-              <h3 className="font-bold text-slate-800 font-sans">
-                {editingRoom ? "Edit Infrastructure Seating Room" : "Create Infrastructure Room"}
+          <div className="bg-white rounded-xl border border-slate-200 shadow-xl max-w-md w-full overflow-hidden flex flex-col">
+            <div className="p-5 border-b border-slate-150 flex justify-between items-center bg-slate-50">
+              <h3 className="font-bold text-slate-800 text-sm tracking-tight uppercase">
+                {editingRoom ? "Edit Infrastructure Room" : "Create Infrastructure Room"}
               </h3>
               <button
                 onClick={() => setShowRoomModal(false)}
-                className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-lg transition-all"
+                className="p-1 text-slate-400 hover:bg-slate-150 rounded transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -354,34 +354,34 @@ export default function BlockRoomManager({
             <form onSubmit={handleRoomSubmit} className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Room / Hall Number</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Room / Hall Number</label>
                   <input
                     type="text"
                     required
                     value={roomFields.roomNumber}
                     onChange={(e) => setRoomFields({ ...roomFields, roomNumber: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-mono font-medium bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     placeholder="e.g. 101"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Floor Level</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Floor Level</label>
                   <input
                     type="number"
                     value={roomFields.floor}
                     onChange={(e) => setRoomFields({ ...roomFields, floor: parseInt(e.target.value) || 1 })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-mono focus:outline-none"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-mono font-medium bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1">Associated Wing Block</label>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Associated Wing Block</label>
                 <select
                   value={roomFields.blockName}
                   onChange={(e) => setRoomFields({ ...roomFields, blockName: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none cursor-pointer"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-medium bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
                 >
                   {blocks.map((b) => (
                     <option key={b.id} value={b.name}>
@@ -393,79 +393,79 @@ export default function BlockRoomManager({
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Number of Benches</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Number of Benches</label>
                   <input
                     type="number"
                     value={roomFields.numberOfBenches}
                     onChange={(e) => setRoomFields({ ...roomFields, numberOfBenches: parseInt(e.target.value) || 20 })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-mono focus:outline-none"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-mono font-medium bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Students Per Bench</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Students Per Bench</label>
                   <input
                     type="number"
                     value={roomFields.studentsPerBench}
                     onChange={(e) => setRoomFields({ ...roomFields, studentsPerBench: parseInt(e.target.value) || 2 })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-mono focus:outline-none"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-mono font-medium bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
               </div>
 
-              <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 text-center font-mono">
-                <span className="text-xs text-slate-400">Computed Seating Capacity: </span>
-                <span className="text-sm font-bold text-slate-800">
+              <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-center font-mono">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Computed Capacity: </span>
+                <span className="text-xs font-bold text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200">
                   {roomFields.numberOfBenches * roomFields.studentsPerBench} Pupils
                 </span>
               </div>
 
               <div className="space-y-2 pt-2">
-                <label className="block text-xs font-semibold text-slate-500">Facility Type Features</label>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Facility Type Features</label>
                 <div className="grid grid-cols-3 gap-2">
-                  <label className="flex items-center gap-1.5 text-[10px] font-bold text-slate-700 cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={roomFields.isSmartClassroom}
                       onChange={(e) => setRoomFields({ ...roomFields, isSmartClassroom: e.target.checked })}
-                      className="rounded text-slate-950"
+                      className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                     />
                     <span>Smart Board</span>
                   </label>
 
-                  <label className="flex items-center gap-1.5 text-[10px] font-bold text-slate-700 cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={roomFields.isLab}
                       onChange={(e) => setRoomFields({ ...roomFields, isLab: e.target.checked })}
-                      className="rounded text-slate-950"
+                      className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                     />
                     <span>Science Lab</span>
                   </label>
 
-                  <label className="flex items-center gap-1.5 text-[10px] font-bold text-slate-700 cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={roomFields.isComputerLab}
                       onChange={(e) => setRoomFields({ ...roomFields, isComputerLab: e.target.checked })}
-                      className="rounded text-slate-950"
+                      className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                     />
                     <span>PC Lab</span>
                   </label>
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-100 flex justify-end gap-2">
+              <div className="pt-4 border-t border-slate-150 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setShowRoomModal(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-medium transition-all cursor-pointer"
+                  className="px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-lg text-xs font-semibold border border-slate-200 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-medium transition-all cursor-pointer"
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors cursor-pointer"
                 >
                   Save Room
                 </button>
@@ -478,14 +478,14 @@ export default function BlockRoomManager({
       {/* Block Modal */}
       {showBlockModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-xl max-w-md w-full overflow-hidden flex flex-col">
-            <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-              <h3 className="font-bold text-slate-800 font-sans">
+          <div className="bg-white rounded-xl border border-slate-200 shadow-xl max-w-md w-full overflow-hidden flex flex-col">
+            <div className="p-5 border-b border-slate-150 flex justify-between items-center bg-slate-50">
+              <h3 className="font-bold text-slate-800 text-sm tracking-tight uppercase">
                 {editingBlock ? "Edit Infrastructure Wing Block" : "Register Wing Block"}
               </h3>
               <button
                 onClick={() => setShowBlockModal(false)}
-                className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-lg transition-all"
+                className="p-1 text-slate-400 hover:bg-slate-150 rounded transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -493,42 +493,42 @@ export default function BlockRoomManager({
 
             <form onSubmit={handleBlockSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1">Block / Wing Name</label>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Block / Wing Name</label>
                 <input
                   type="text"
                   required
                   value={blockFields.name}
                   onChange={(e) => setBlockFields({ ...blockFields, name: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-medium bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="e.g. A Block"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Number of Floors</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Number of Floors</label>
                   <input
                     type="number"
                     value={blockFields.numberOfFloors}
                     onChange={(e) => setBlockFields({ ...blockFields, numberOfFloors: parseInt(e.target.value) || 1 })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-mono focus:outline-none"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-mono font-medium bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Supervisor Officer</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Supervisor Officer</label>
                   <input
                     type="text"
                     value={blockFields.supervisor}
                     onChange={(e) => setBlockFields({ ...blockFields, supervisor: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-medium bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     placeholder="e.g. Mr. Ramesh Kumar"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1">Rooms (comma separated)</label>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Rooms (comma separated)</label>
                 <input
                   type="text"
                   value={blockFields.rooms.join(", ")}
@@ -538,22 +538,22 @@ export default function BlockRoomManager({
                       rooms: e.target.value.split(",").map((s) => s.trim()).filter(Boolean)
                     })
                   }
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-mono focus:outline-none"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-mono font-medium bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="e.g. 101, 102, 201"
                 />
               </div>
 
-              <div className="pt-4 border-t border-slate-100 flex justify-end gap-2">
+              <div className="pt-4 border-t border-slate-150 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setShowBlockModal(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-medium transition-all cursor-pointer"
+                  className="px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-lg text-xs font-semibold border border-slate-200 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-medium transition-all cursor-pointer"
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors cursor-pointer"
                 >
                   Save Block
                 </button>

@@ -245,12 +245,14 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row relative text-slate-800 font-sans antialiased selection:bg-slate-900 selection:text-white">
+    <div className="h-screen w-screen bg-slate-50 flex flex-col md:flex-row relative text-slate-900 font-sans antialiased overflow-hidden selection:bg-slate-900 selection:text-white">
       {/* Mobile Header */}
-      <header className="md:hidden bg-slate-900 text-white px-5 py-4 flex items-center justify-between border-b border-slate-800 sticky top-0 z-40">
+      <header className="md:hidden bg-slate-900 text-white px-5 py-4 flex items-center justify-between border-b border-slate-800 shrink-0 z-40">
         <div className="flex items-center gap-2">
-          <GraduationCap className="w-6 h-6 text-indigo-400 fill-indigo-400/20" />
-          <span className="font-bold tracking-tight text-sm font-sans">{schoolInfo.name}</span>
+          <div className="w-7 h-7 bg-indigo-500 rounded-lg flex items-center justify-center text-white font-bold text-xs">
+            {schoolInfo.name ? schoolInfo.name.charAt(0) : "S"}
+          </div>
+          <span className="font-semibold tracking-tight text-sm text-white">{schoolInfo.name}</span>
         </div>
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -262,23 +264,23 @@ export default function App() {
 
       {/* Navigation Sidebar/Drawer */}
       <aside
-        className={`fixed md:sticky top-0 left-0 bottom-0 z-50 w-72 bg-slate-900 text-slate-300 border-r border-slate-800 flex flex-col justify-between transform transition-transform duration-300 ${
+        className={`fixed md:sticky top-0 left-0 bottom-0 z-50 w-64 bg-slate-900 text-slate-300 border-r border-slate-800 flex flex-col justify-between transform transition-transform duration-300 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-        } h-screen shrink-0`}
+        } h-full shrink-0`}
       >
-        <div className="flex flex-col h-full overflow-y-auto">
+        <div className="flex flex-col h-full overflow-hidden">
           {/* Brand/Logo Header */}
-          <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-950">
+          <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900 shrink-0">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-indigo-600 rounded-xl text-white shadow-md shadow-indigo-600/35">
-                <GraduationCap className="w-6 h-6 fill-indigo-200/20" />
+              <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md shadow-indigo-600/35">
+                {schoolInfo.name ? schoolInfo.name.charAt(0) : "S"}
               </div>
               <div>
-                <h2 className="font-extrabold text-white text-sm tracking-tight leading-none truncate max-w-[150px]">
-                  {schoolInfo.name}
+                <h2 className="font-semibold text-white text-base tracking-tight leading-none truncate max-w-[130px]">
+                  Scheduler AI
                 </h2>
                 <span className="text-[10px] text-slate-500 font-bold tracking-wider font-mono uppercase mt-1 inline-block">
-                  Academic Admin v2.0
+                  {schoolInfo.name || "Principal Office"}
                 </span>
               </div>
             </div>
@@ -291,7 +293,7 @@ export default function App() {
           </div>
 
           {/* Navigation Links */}
-          <nav className="p-4 space-y-1 flex-1">
+          <nav className="p-4 space-y-1 flex-1 overflow-y-auto">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -302,10 +304,10 @@ export default function App() {
                     setActiveTab(item.id);
                     setSidebarOpen(false);
                   }}
-                  className={`w-full px-4 py-3 rounded-xl text-xs font-bold transition-all flex items-center gap-3 cursor-pointer ${
+                  className={`w-full px-3 py-2 rounded-md text-xs font-semibold transition-all flex items-center gap-3 cursor-pointer ${
                     isActive
-                      ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20"
-                      : "hover:bg-slate-800/60 hover:text-white"
+                      ? "bg-indigo-600 text-white shadow-sm"
+                      : "hover:bg-slate-800 text-slate-400 hover:text-white"
                   }`}
                 >
                   <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-slate-400"}`} />
@@ -314,24 +316,104 @@ export default function App() {
               );
             })}
           </nav>
-        </div>
 
-        {/* User context footer */}
-        <div className="p-5 border-t border-slate-800 bg-slate-950/40 text-center font-mono text-[10px] text-slate-500">
-          <div>Term: {schoolInfo.term}</div>
-          <div>UDISE Board Code: {schoolInfo.udiseCode}</div>
+          {/* AI Engine Status Indicator */}
+          <div className="p-4 border-t border-slate-800 bg-slate-900/40 shrink-0">
+            <div className="flex items-center gap-2 p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/30">
+              <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+              <span className="text-xs font-medium text-indigo-400">AI Engine Active</span>
+            </div>
+          </div>
         </div>
       </aside>
 
-      {/* Main Panel Content container */}
-      <main className="flex-1 p-4 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full space-y-6">
-        {renderActiveComponent()}
-      </main>
+      {/* Main Content Area Wrapper */}
+      <div className="flex-1 flex flex-col h-full overflow-hidden">
+        {/* Header */}
+        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 z-10">
+          <div className="flex items-center gap-4">
+            <h1 className="text-lg font-bold text-slate-800 capitalize">
+              {navItems.find((item) => item.id === activeTab)?.label || "Dashboard"}
+            </h1>
+            <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded text-[10px] font-semibold uppercase tracking-wider">
+              {schoolInfo.term || "AY 2026-27"}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-6">
+            {/* Search Input */}
+            <div className="relative hidden md:block">
+              <input
+                type="text"
+                placeholder="Search records..."
+                className="w-64 pl-9 pr-4 py-1.5 bg-slate-100 border-none rounded-full text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800"
+              />
+              <svg
+                className="w-4 h-4 text-slate-400 absolute left-3 top-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+
+            {/* Profile */}
+            <div className="flex items-center gap-3">
+              <div className="text-right hidden sm:block">
+                <p className="text-xs font-semibold text-slate-900">
+                  {schoolInfo.principalName || "Dr. Robert Vance"}
+                </p>
+                <p className="text-[10px] text-slate-500 font-medium">Administrator</p>
+              </div>
+              <div className="w-9 h-9 rounded-full bg-indigo-50 border-2 border-white flex items-center justify-center font-bold text-indigo-600 text-xs shadow-sm">
+                {(schoolInfo.principalName || "Robert Vance")
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")}
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Content Area */}
+        <main className="flex-1 p-8 overflow-y-auto bg-slate-50 space-y-6">
+          <div className="max-w-7xl mx-auto w-full space-y-6">
+            {renderActiveComponent()}
+          </div>
+        </main>
+
+        {/* Footer Info */}
+        <footer className="px-8 py-3 bg-white border-t border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-2 shrink-0">
+          <div className="flex gap-6">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">
+                System Status: Optimal
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+              <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">
+                Cloud Backup: 2m ago
+              </span>
+            </div>
+          </div>
+          <div className="text-[10px] text-slate-400 font-medium">
+            &copy; {new Date().getFullYear()} School Scheduler AI. Powered by Google Gemini Engine.
+          </div>
+        </footer>
+      </div>
 
       {/* Floating Application Toast */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 animate-bounce duration-1000">
-          <div className="bg-slate-950 text-white rounded-2xl p-4 shadow-2xl border border-slate-800 flex items-start gap-3 max-w-sm">
+        <div className="fixed bottom-6 right-6 z-50 animate-bounce">
+          <div className="bg-slate-900 text-white rounded-xl p-4 shadow-2xl border border-slate-800 flex items-start gap-3 max-w-sm">
             <div className={`p-1.5 rounded-lg shrink-0 mt-0.5 ${
               toast.type === "success" ? "bg-emerald-500/20 text-emerald-400" : toast.type === "warning" ? "bg-amber-500/20 text-amber-400" : "bg-blue-500/20 text-blue-400"
             }`}>

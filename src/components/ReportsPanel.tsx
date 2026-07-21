@@ -69,20 +69,20 @@ export default function ReportsPanel({
   return (
     <div className="space-y-6" id="reports-panel-tab">
       {/* Report controllers */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div className="flex bg-slate-100 p-1 rounded-xl">
+      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="flex bg-slate-100 p-1 rounded-lg">
           <button
             onClick={() => setReportType("workload")}
-            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              reportType === "workload" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-800"
+            className={`px-4 py-2 rounded text-xs font-bold transition-all cursor-pointer ${
+              reportType === "workload" ? "bg-white text-slate-900 shadow-xs" : "text-slate-500 hover:text-slate-800"
             }`}
           >
             Faculty Workload Analysis
           </button>
           <button
             onClick={() => setReportType("exam_stats")}
-            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              reportType === "exam_stats" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-800"
+            className={`px-4 py-2 rounded text-xs font-bold transition-all cursor-pointer ${
+              reportType === "exam_stats" ? "bg-white text-slate-900 shadow-xs" : "text-slate-500 hover:text-slate-800"
             }`}
           >
             Examination Summary
@@ -92,17 +92,17 @@ export default function ReportsPanel({
         <div className="flex items-center gap-2 self-stretch md:self-auto">
           <button
             onClick={triggerExportExcel}
-            className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer flex-1 md:flex-initial"
+            className="px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-lg text-xs font-semibold border border-slate-200 flex items-center justify-center gap-2 cursor-pointer flex-1 md:flex-initial transition-colors"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-3.5 h-3.5" />
             <span>Export Spreadsheet</span>
           </button>
 
           <button
             onClick={triggerPrintPDF}
-            className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer flex-1 md:flex-initial"
+            className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-sm flex items-center justify-center gap-2 cursor-pointer flex-1 md:flex-initial transition-colors"
           >
-            <Printer className="w-4 h-4" />
+            <Printer className="w-3.5 h-3.5" />
             <span>Print Report</span>
           </button>
         </div>
@@ -111,32 +111,32 @@ export default function ReportsPanel({
       {/* Main Stats / Workload visualizer */}
       {reportType === "workload" ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-            <div className="p-5 border-b border-slate-50">
-              <h3 className="font-bold text-slate-800 font-sans text-sm">Faculty Operational Workload Stats</h3>
+          <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="p-5 border-b border-slate-150 bg-slate-50">
+              <h3 className="font-bold text-slate-800 text-sm tracking-tight">FACULTY OPERATIONAL WORKLOAD STATS</h3>
             </div>
             <div className="p-6 space-y-5">
               {teacherWorkload.map((w, idx) => (
                 <div key={idx} className="space-y-2">
                   <div className="flex justify-between items-center text-xs">
                     <div>
-                      <strong className="text-slate-900">{w.name}</strong>
-                      <span className="text-slate-400 font-mono text-[10px] ml-1.5">{w.employeeId}</span>
+                      <strong className="text-slate-800 font-bold text-xs">{w.name}</strong>
+                      <span className="text-slate-400 font-mono text-[10px] font-bold uppercase tracking-wider ml-1.5">ID: {w.employeeId}</span>
                     </div>
-                    <span className="font-mono text-slate-500 font-bold">
-                      {w.periods} / {w.maxPeriods} periods assigned ({w.percentage}%)
+                    <span className="font-mono text-slate-600 font-bold">
+                      {w.periods} / {w.maxPeriods} periods ({w.percentage}%)
                     </span>
                   </div>
 
                   {/* Progress gauge */}
-                  <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                  <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200/50">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${
                         w.percentage > 85
                           ? "bg-rose-500"
                           : w.percentage > 60
                           ? "bg-amber-500"
-                          : "bg-indigo-500"
+                          : "bg-indigo-600"
                       }`}
                       style={{ width: `${w.percentage}%` }}
                     />
@@ -146,45 +146,45 @@ export default function ReportsPanel({
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-5 h-fit">
-            <h3 className="font-bold text-slate-800 font-sans tracking-tight">Institutional Totals</h3>
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-5 h-fit">
+            <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider">Institutional Totals</h3>
             
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-center space-y-1">
-                <Users className="w-5 h-5 mx-auto text-slate-400" />
-                <div className="text-[10px] text-slate-400 font-bold uppercase">Students</div>
-                <div className="text-xl font-extrabold text-slate-900 font-mono">{students.length}</div>
+              <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 text-center space-y-1">
+                <Users className="w-4 h-4 mx-auto text-slate-400" />
+                <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider font-mono">Students</div>
+                <div className="text-lg font-extrabold text-slate-800 font-mono">{students.length}</div>
               </div>
 
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-center space-y-1">
-                <Award className="w-5 h-5 mx-auto text-slate-400" />
-                <div className="text-[10px] text-slate-400 font-bold uppercase">Teachers</div>
-                <div className="text-xl font-extrabold text-slate-900 font-mono">{teachers.length}</div>
+              <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 text-center space-y-1">
+                <Award className="w-4 h-4 mx-auto text-slate-400" />
+                <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider font-mono">Teachers</div>
+                <div className="text-lg font-extrabold text-slate-800 font-mono">{teachers.length}</div>
               </div>
 
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-center space-y-1">
-                <Clock className="w-5 h-5 mx-auto text-slate-400" />
-                <div className="text-[10px] text-slate-400 font-bold uppercase">Slots Booked</div>
-                <div className="text-xl font-extrabold text-slate-900 font-mono">{timetable.length}</div>
+              <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 text-center space-y-1">
+                <Clock className="w-4 h-4 mx-auto text-slate-400" />
+                <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider font-mono">Slots Booked</div>
+                <div className="text-lg font-extrabold text-slate-800 font-mono">{timetable.length}</div>
               </div>
 
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-center space-y-1">
-                <BookOpen className="w-5 h-5 mx-auto text-slate-400" />
-                <div className="text-[10px] text-slate-400 font-bold uppercase">Exams Set</div>
-                <div className="text-xl font-extrabold text-slate-900 font-mono">{exams.length}</div>
+              <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 text-center space-y-1">
+                <BookOpen className="w-4 h-4 mx-auto text-slate-400" />
+                <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider font-mono">Exams Set</div>
+                <div className="text-lg font-extrabold text-slate-800 font-mono">{exams.length}</div>
               </div>
             </div>
           </div>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-slate-50">
-            <h3 className="font-bold text-slate-800 font-sans text-sm">Active Examination Datesheet Log</h3>
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="p-5 border-b border-slate-150 bg-slate-50">
+            <h3 className="font-bold text-slate-800 text-sm tracking-tight">ACTIVE EXAMINATION DATESHEET LOG</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-100 text-xs font-bold text-slate-500 uppercase tracking-wider font-mono">
+                <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider font-mono">
                   <th className="py-4 px-6">Subject</th>
                   <th className="py-4 px-6">Exam Classification</th>
                   <th className="py-4 px-6">Date Scheduled</th>
@@ -192,14 +192,14 @@ export default function ReportsPanel({
                   <th className="py-4 px-6">Total Targets</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-sm font-sans text-slate-700">
+              <tbody className="divide-y divide-slate-200 text-xs font-sans text-slate-700">
                 {exams.map((ex, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50/50">
-                    <td className="py-4 px-6 font-bold text-slate-950">{ex.subjectId}</td>
-                    <td className="py-4 px-6 font-medium text-slate-600">{ex.name}</td>
-                    <td className="py-4 px-6 font-mono text-xs">{ex.date}</td>
-                    <td className="py-4 px-6 font-mono text-xs">{ex.startTime} - {ex.endTime}</td>
-                    <td className="py-4 px-6 font-mono font-semibold text-slate-700">
+                  <tr key={idx} className="hover:bg-slate-50/40 transition-colors">
+                    <td className="py-4 px-6 font-bold text-slate-800">{ex.subjectId}</td>
+                    <td className="py-4 px-6 font-semibold text-slate-600">{ex.name}</td>
+                    <td className="py-4 px-6 font-mono font-semibold text-slate-500">{ex.date}</td>
+                    <td className="py-4 px-6 font-mono font-semibold text-slate-500">{ex.startTime} - {ex.endTime}</td>
+                    <td className="py-4 px-6 font-mono font-bold text-slate-600">
                       Class {ex.classes.join(", ")}
                     </td>
                   </tr>
