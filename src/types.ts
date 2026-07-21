@@ -16,6 +16,41 @@ export interface SchoolInfo {
   schoolTiming: { start: string; end: string };
   lunchTiming: { start: string; end: string };
   holidays: { date: string; name: string }[];
+  term?: string;
+
+  // New detailed timing fields
+  assemblyStart: string;
+  assemblyDuration: number;
+  periodsCount: number;
+  periodDuration: number;
+  recessStart: string;
+  recessDuration: number;
+  lastBellTime: string;
+
+  // Custom timings override per class range
+  customClassTimings?: {
+    id: string;
+    classRange: string; // e.g. "Classes 1-5" or "Classes 6-10"
+    start: string;
+    end: string;
+    assemblyStart: string;
+    assemblyDuration: number;
+    periodsCount: number;
+    periodDuration: number;
+    recessStart: string;
+    recessDuration: number;
+    lunchStart: string;
+    lunchDuration: number;
+    lastBellTime: string;
+  }[];
+}
+
+export interface TimeSlot {
+  type: "assembly" | "recess" | "lunch" | "period" | "free" | "recess2";
+  label: string; // e.g., "Assembly", "Period 1", "Lunch Break"
+  periodIndex?: number; // if type is "period", e.g. 1, 2, 3...
+  start: string; // "HH:MM" format
+  end: string; // "HH:MM" format
 }
 
 export interface Student {

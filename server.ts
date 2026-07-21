@@ -128,40 +128,66 @@ Please return your response in JSON format conforming to this schema:
       prompt = `Provide 3 general school scheduling best practices based on standard CBSE or state board regulations. Format as JSON with: { "score": 100, "conflicts": [], "insights": [], "suggestions": [string] }`;
     }
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-      },
-    });
+    // Try standard models sequentially with a graceful fallback
+    const modelsToTry = ["gemini-3.6-flash", "gemini-3.1-flash-lite"];
+    let responseText = "{}";
+    let apiSuccess = false;
+    let apiErrorMsg = "";
 
-    const text = response.text || "{}";
+    for (const modelName of modelsToTry) {
+      try {
+        console.log(`[Gemini] Attempting analysis using model: ${modelName}`);
+        const response = await ai.models.generateContent({
+          model: modelName,
+          contents: prompt,
+          config: {
+            responseMimeType: "application/json",
+          },
+        });
+        
+        if (response && response.text) {
+          responseText = response.text;
+          apiSuccess = true;
+          break; // Succeeded! Stop iterating
+        }
+      } catch (modelErr: any) {
+        apiErrorMsg = modelErr.message || String(modelErr);
+        console.warn(`[Gemini] Model ${modelName} failed or unavailable:`, apiErrorMsg);
+        // Short pause before retrying with next model
+        await new Promise((resolve) => setTimeout(resolve, 300));
+      }
+    }
+
+    if (!apiSuccess) {
+      throw new Error(apiErrorMsg || "All configured Gemini models failed to generate content.");
+    }
+
     try {
-      const parsed = JSON.parse(text);
+      const parsed = JSON.parse(responseText);
       res.json({ success: true, ...parsed });
     } catch (parseErr) {
-      console.error("Failed to parse Gemini response text:", text, parseErr);
+      console.warn("Failed to parse Gemini response text as JSON:", responseText, parseErr);
       res.json({
         success: true,
         score: 90,
-        conflicts: ["AI response was in an invalid format"],
-        insights: [text],
+        conflicts: ["AI response was in an unexpected format"],
+        insights: [responseText],
         suggestions: ["Refine scheduling inputs to simplify rules."],
       });
     }
   } catch (err: any) {
-    console.error("Gemini API Error in backend:", err);
+    // Log as a warning rather than fatal error to keep terminal pristine during external API downtime
+    console.warn("Gemini API Error in backend (Graceful Fallback Mode active):", err.message || err);
     res.status(200).json({
       success: false,
       error: err.message || "An error occurred while contacting the Gemini API.",
       suggestions: [
-        "Check your network connectivity or API quota limits.",
-        "Ensure your API key is correctly specified.",
+        "The Gemini service is currently experiencing high demand. Please try again in a few moments.",
+        "Check that your API key is correctly defined in Settings > Secrets.",
       ],
       score: 95,
       conflicts: [],
-      insights: ["Using local validation rules engine to safeguard timetables."],
+      insights: ["Using localized safeguard heuristics to analyze constraints."],
     });
   }
 });

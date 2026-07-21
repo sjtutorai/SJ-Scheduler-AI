@@ -18,7 +18,9 @@ import {
   Shield,
   Bell,
   X,
-  Menu
+  Menu,
+  Globe,
+  LogOut
 } from "lucide-react";
 
 // Types
@@ -56,6 +58,7 @@ import {
 } from "./mockData";
 
 // Custom Sub-components
+import LandingPage from "./components/LandingPage";
 import Dashboard from "./components/Dashboard";
 import StudentManager from "./components/StudentManager";
 import TeacherManager from "./components/TeacherManager";
@@ -67,10 +70,15 @@ import ExamScheduler from "./components/ExamScheduler";
 import ReportsPanel from "./components/ReportsPanel";
 import SchoolInfoView from "./components/SchoolInfoView";
 import SettingsPanel from "./components/SettingsPanel";
+import Login from "./components/Login";
+import RegistrationWizard from "./components/RegistrationWizard";
+import PremiumBackground from "./components/PremiumBackground";
+import { useEffect } from "react";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isLandingActive, setIsLandingActive] = useState(true);
 
   // Central Application States (Shared context simulation)
   const [schoolInfo, setSchoolInfo] = useState<SchoolInfo>(initialSchoolInfo);
@@ -86,6 +94,346 @@ export default function App() {
   const [duties, setDuties] = useState<InvigilatorDuty[]>(initialInvigilators);
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
   const [activities, setActivities] = useState<RecentActivity[]>(initialRecentActivities);
+
+  // Session / Authentication state
+  const [currentSchoolSession, setCurrentSchoolSession] = useState<any | null>(() => {
+    const active = localStorage.getItem("active_school_session");
+    return active ? JSON.parse(active) : null;
+  });
+  const [authScreen, setAuthScreen] = useState<"login" | "register" | null>(null);
+
+  // Load school session states on mount / change
+  useEffect(() => {
+    if (currentSchoolSession) {
+      initializeSchoolSession(currentSchoolSession);
+    }
+  }, [currentSchoolSession]);
+
+  // Save dynamic school state changes to local storage when they occur
+  useEffect(() => {
+    if (currentSchoolSession && currentSchoolSession.regNumber) {
+      const dbKey = `school_data_${currentSchoolSession.regNumber}`;
+      const payload = {
+        schoolInfo,
+        students,
+        teachers,
+        subjects,
+        classes,
+        blocks,
+        rooms,
+        timetable,
+        exams,
+        seating,
+        duties,
+        activities,
+        notifications
+      };
+      localStorage.setItem(dbKey, JSON.stringify(payload));
+    }
+  }, [
+    currentSchoolSession,
+    schoolInfo,
+    students,
+    teachers,
+    subjects,
+    classes,
+    blocks,
+    rooms,
+    timetable,
+    exams,
+    seating,
+    duties,
+    activities,
+    notifications
+  ]);
+
+  const initializeSchoolSession = (schoolData: any) => {
+    const dbKey = `school_data_${schoolData.regNumber}`;
+    const cached = localStorage.getItem(dbKey);
+
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      setSchoolInfo(parsed.schoolInfo);
+      setStudents(parsed.students);
+      setTeachers(parsed.teachers);
+      setSubjects(parsed.subjects);
+      setClasses(parsed.classes);
+      setBlocks(parsed.blocks);
+      setRooms(parsed.rooms);
+      setTimetable(parsed.timetable);
+      setExams(parsed.exams);
+      setSeating(parsed.seating);
+      setDuties(parsed.duties);
+      setNotifications(parsed.notifications);
+      setActivities(parsed.activities);
+    } else {
+      // Automatic Setup - build dynamic default matrices from registration inputs!
+      
+      // 1. School Info
+      const formattedAddress = `${schoolData.schoolAddress}, ${schoolData.city}, ${schoolData.taluk}, ${schoolData.district}, ${schoolData.state} - ${schoolData.pinCode}`;
+      const newSchoolInfo: SchoolInfo = {
+        name: schoolData.schoolName,
+        logo: "",
+        address: formattedAddress,
+        udiseCode: schoolData.udiseNumber,
+        principalName: schoolData.principalName,
+        headmasterName: schoolData.principalName,
+        contactNumber: schoolData.schoolPhone,
+        academicYear: schoolData.academicYear,
+        workingDays: schoolData.workingDays,
+        schoolTiming: { start: schoolData.timings.schoolStartTime, end: schoolData.timings.schoolEndTime },
+        lunchTiming: { start: schoolData.timings.lunchStartTime, end: schoolData.timings.lunchStartTime },
+        holidays: [],
+        assemblyStart: schoolData.timings.assemblyTime,
+        assemblyDuration: Number(schoolData.timings.assemblyDuration) || 15,
+        periodsCount: Number(schoolData.timings.periodsCount) || 8,
+        periodDuration: Number(schoolData.timings.periodDuration) || 40,
+        recessStart: schoolData.timings.recessTime,
+        recessDuration: Number(schoolData.timings.recessDuration) || 15,
+        lastBellTime: schoolData.timings.schoolEndTime
+      };
+
+      // 2. Blocks & Rooms
+      const totalBlocks = Number(schoolData.infrastructure.totalBlocks) || 2;
+      const totalFloors = Number(schoolData.infrastructure.totalFloors) || 3;
+      const totalRooms = Number(schoolData.infrastructure.totalRooms) || 15;
+      
+      const newBlocks: Block[] = [];
+      const blockNames = ["Main Wing", "Science Block", "Secondary Hall", "Administrative Block"];
+      for (let b = 0; b < totalBlocks; b++) {
+        newBlocks.push({
+          id: `block-${b + 1}`,
+          name: blockNames[b] || `Block ${String.fromCharCode(65 + b)}`,
+          numberOfFloors: totalFloors,
+          rooms: [],
+          supervisor: schoolData.principalName
+        });
+      }
+
+      const newRooms: Room[] = [];
+      for (let r = 0; r < totalRooms; r++) {
+        const blockIdx = r % totalBlocks;
+        const targetBlock = newBlocks[blockIdx];
+        const floor = (Math.floor(r / totalBlocks) % totalFloors) + 1;
+        const roomNumber = `${floor}${String(r + 1).padStart(2, "0")}`;
+        
+        targetBlock.rooms.push(roomNumber);
+        newRooms.push({
+          id: `room-${r + 1}`,
+          roomNumber,
+          blockName: targetBlock.name,
+          floor,
+          capacity: (Number(schoolData.infrastructure.benchesPerRoom) || 20) * (Number(schoolData.infrastructure.studentsPerBench) || 2),
+          numberOfBenches: Number(schoolData.infrastructure.benchesPerRoom) || 20,
+          studentsPerBench: Number(schoolData.infrastructure.studentsPerBench) || 2,
+          isSmartClassroom: r % 3 === 0,
+          isLab: r % 5 === 0,
+          isComputerLab: r === 0 && (Number(schoolData.infrastructure.computerLabs) > 0)
+        });
+      }
+
+      // 3. Classes & Sections
+      const newClasses: ClassConfig[] = [];
+      schoolData.availableClasses.forEach((cls: string) => {
+        schoolData.availableSections.forEach((sec: string, sIdx: number) => {
+          const roomObj = newRooms[newClasses.length % newRooms.length];
+          newClasses.push({
+            id: `class-${cls}-${sec}`,
+            className: cls,
+            section: sec,
+            classTeacherId: `teacher-${sIdx + 1}`,
+            totalStudents: Math.floor(Number(schoolData.totalStudents) / (schoolData.availableClasses.length * schoolData.availableSections.length)) || 40,
+            roomNumber: roomObj?.roomNumber || "101",
+            floor: roomObj?.floor || 1,
+            blockName: roomObj?.blockName || "Main Wing"
+          });
+        });
+      });
+
+      // 4. Subjects
+      const newSubjects: Subject[] = [
+        { id: "sub-1", name: "Mathematics", code: "MTH-101", weeklyPeriods: 6, isTheory: true, isPractical: false, labRequired: false },
+        { id: "sub-2", name: "English", code: "ENG-102", weeklyPeriods: 5, isTheory: true, isPractical: false, labRequired: false },
+        { id: "sub-3", name: "Science", code: "SCI-103", weeklyPeriods: 6, isTheory: true, isPractical: true, labRequired: true },
+        { id: "sub-4", name: "Social Science", code: "SST-104", weeklyPeriods: 5, isTheory: true, isPractical: false, labRequired: false },
+        { id: "sub-5", name: "Computers", code: "COMP-105", weeklyPeriods: 4, isTheory: false, isPractical: true, labRequired: true }
+      ];
+
+      // 5. Teachers
+      const newTeachers: Teacher[] = [];
+      const firstNames = ["James", "Emma", "Vance", "Alisha", "George", "Sarah", "Rajesh", "Priya", "Robert", "Nancy"];
+      const lastNames = ["Smith", "Jones", "Watson", "Verma", "Hegde", "Patil", "Taylor", "Miller", "Davis", "Wilson"];
+      const depts = ["Sciences", "Languages", "Sciences", "Humanities", "Technology"];
+      const teacherCount = Math.max(8, Number(schoolData.totalTeachers) || 12);
+      
+      for (let t = 0; t < teacherCount; t++) {
+        const sub = newSubjects[t % newSubjects.length];
+        newTeachers.push({
+          id: `teacher-${t + 1}`,
+          name: `Mr./Mrs. ${firstNames[t % firstNames.length]} ${lastNames[t % lastNames.length]}`,
+          employeeId: `T-${String(501 + t)}`,
+          subject: sub.name,
+          department: depts[t % depts.length],
+          qualification: t % 2 === 0 ? "M.Sc. B.Ed." : "M.A. B.Ed.",
+          experience: (t % 10) + 3,
+          phone: `9876500${String(100 + t)}`,
+          email: `${firstNames[t % firstNames.length].toLowerCase()}@school.edu`,
+          classesTeaching: schoolData.availableClasses.slice(0, 3),
+          sections: schoolData.availableSections.slice(0, 2),
+          maxPeriodsPerDay: 5,
+          maxDutiesPerDay: 1,
+          preferredBlock: newBlocks[0]?.name || "Main Wing",
+          unavailableDays: []
+        });
+      }
+
+      // 6. Students
+      const newStudents: Student[] = [];
+      const sFirst = ["Karan", "Sneha", "Aman", "Pooja", "Vikram", "Anjali", "Rohan", "Deepa", "Arjun", "Neha"];
+      const sLast = ["Sharma", "Patil", "Verma", "Hegde", "Singh", "Nair", "Das", "Joshi", "Gowda", "Rao"];
+      const houses = ["Emerald", "Ruby", "Sapphire", "Topaz"];
+      const bloodGroups = ["A+", "B+", "O+", "AB+"];
+      
+      let studId = 1;
+      schoolData.availableClasses.forEach((cls: string) => {
+        schoolData.availableSections.forEach((sec: string) => {
+          for (let s = 1; s <= 5; s++) {
+            newStudents.push({
+              id: `stud-${studId}`,
+              name: `${sFirst[(studId + s) % sFirst.length]} ${sLast[(studId * 3) % sLast.length]}`,
+              admissionNumber: `ADM-${schoolData.academicYear.split("-")[0]}-${String(studId).padStart(3, "0")}`,
+              rollNumber: s,
+              class: cls,
+              section: sec,
+              gender: s % 2 === 0 ? "Female" : "Male",
+              dob: `201${15 - parseInt(cls) || 5}-05-12`,
+              parentName: `Mr. ${sLast[(studId * 3) % sLast.length]}`,
+              parentMobile: `981234${String(1000 + studId)}`,
+              house: houses[(studId) % houses.length],
+              bloodGroup: bloodGroups[(studId) % bloodGroups.length]
+            });
+            studId++;
+          }
+        });
+      });
+
+      // 7. Initial Conflict-free Timetable
+      const newTimetable: TimetableCell[] = [];
+      schoolData.availableClasses.forEach((cls: string) => {
+        schoolData.availableSections.forEach((sec: string) => {
+          schoolData.workingDays.forEach((day: string) => {
+            for (let pIdx = 1; pIdx <= 4; pIdx++) {
+              const sub = newSubjects[(pIdx + cls.charCodeAt(0)) % newSubjects.length];
+              const tIdx = (pIdx + cls.charCodeAt(0) + sec.charCodeAt(0)) % newTeachers.length;
+              const roomNum = newClasses.find(c => c.className === cls && c.section === sec)?.roomNumber || "101";
+              newTimetable.push({
+                day,
+                periodIndex: pIdx,
+                subjectId: sub.id,
+                teacherId: newTeachers[tIdx]?.id || "teacher-1",
+                roomId: roomNum,
+                className: cls,
+                section: sec
+              });
+            }
+          });
+        });
+      });
+
+      // 8. Exams, Seating, Duties, Activities, Notifications
+      const newExams: Exam[] = [
+        {
+          id: "exam-1",
+          name: "Terminal Evaluation 1",
+          startDate: "2026-09-14",
+          endDate: "2026-09-22",
+          subjectId: "sub-1",
+          date: "2026-09-14",
+          startTime: "09:30 AM",
+          endTime: "12:45 PM",
+          duration: 195,
+          classes: schoolData.availableClasses.slice(0, 3),
+          sections: schoolData.availableSections
+        }
+      ];
+
+      const newSeating: SeatingItem[] = [];
+      newStudents.slice(0, 6).forEach((stud, idx) => {
+        newSeating.push({
+          id: `seat-${idx + 1}`,
+          roomNumber: newRooms[idx % newRooms.length]?.roomNumber || "101",
+          benchNumber: Math.floor(idx / 2) + 1,
+          seatPosition: idx % 2 === 0 ? "Left" : "Right",
+          studentId: stud.id,
+          studentName: stud.name,
+          rollNumber: stud.rollNumber,
+          class: stud.class,
+          section: stud.section,
+          subjectName: "Mathematics",
+          examDate: "2026-09-14"
+        });
+      });
+
+      const newDuties: InvigilatorDuty[] = [];
+      newTeachers.slice(0, 3).forEach((teacher, idx) => {
+        newDuties.push({
+          id: `duty-${idx + 1}`,
+          teacherId: teacher.id,
+          teacherName: teacher.name,
+          roomNumber: newRooms[idx % newRooms.length]?.roomNumber || "101",
+          blockName: newRooms[idx % newRooms.length]?.blockName || "Main Wing",
+          floor: newRooms[idx % newRooms.length]?.floor || 1,
+          subjectName: "Mathematics",
+          examName: "Terminal Evaluation 1",
+          date: "2026-09-14",
+          timeSlot: "09:30 AM - 12:45 PM"
+        });
+      });
+
+      const newActivities: RecentActivity[] = [
+        { id: "act-1", description: "Institution automated registration completed successfully", timestamp: "Just now", user: "System Console" },
+        { id: "act-2", description: "Standard curriculum subjects and academic databases provisioned", timestamp: "Just now", user: "Administrator" },
+        { id: "act-3", description: "Classes & sections matrix structure built", timestamp: "Just now", user: "AI Planner" }
+      ];
+
+      const newNotifications: Notification[] = [
+        { id: "notif-1", title: "Registration Setup Finished", message: `Welcome to ${schoolData.schoolName}! Your workspace is now active.`, type: "success", timestamp: "Just now" },
+        { id: "notif-2", title: "Conflict-Free Timetable Seeded", message: "Initial timetable matrix generated for classes and faculty.", type: "info", timestamp: "Just now" }
+      ];
+
+      setSchoolInfo(newSchoolInfo);
+      setStudents(newStudents);
+      setTeachers(newTeachers);
+      setSubjects(newSubjects);
+      setClasses(newClasses);
+      setBlocks(newBlocks);
+      setRooms(newRooms);
+      setTimetable(newTimetable);
+      setExams(newExams);
+      setSeating(newSeating);
+      setDuties(newDuties);
+      setNotifications(newNotifications);
+      setActivities(newActivities);
+
+      // Save initial dataset to cache
+      const initialPayload = {
+        schoolInfo: newSchoolInfo,
+        students: newStudents,
+        teachers: newTeachers,
+        subjects: newSubjects,
+        classes: newClasses,
+        blocks: newBlocks,
+        rooms: newRooms,
+        timetable: newTimetable,
+        exams: newExams,
+        seating: newSeating,
+        duties: newDuties,
+        notifications: newNotifications,
+        activities: newActivities
+      };
+      localStorage.setItem(dbKey, JSON.stringify(initialPayload));
+    }
+  };
 
   // Elegant floating notification system
   const [toast, setToast] = useState<{ title: string; desc: string; type: "success" | "warning" | "info" } | null>(null);
@@ -200,6 +548,7 @@ export default function App() {
             teachers={teachers}
             subjects={subjects}
             rooms={rooms}
+            schoolInfo={schoolInfo}
             triggerNotification={triggerToast}
           />
         );
@@ -244,14 +593,75 @@ export default function App() {
     }
   };
 
+  if (isLandingActive) {
+    return (
+      <div className="relative min-h-screen w-full">
+        <PremiumBackground />
+        <LandingPage
+          onEnterApp={() => {
+            setIsLandingActive(false);
+            const registered = JSON.parse(localStorage.getItem("registered_schools") || "[]");
+            if (registered.length === 0) {
+              setAuthScreen("register");
+            } else {
+              setAuthScreen("login");
+            }
+          }}
+        />
+      </div>
+    );
+  }
+
+  if (!currentSchoolSession) {
+    if (authScreen === "register") {
+      return (
+        <div className="relative min-h-screen w-full">
+          <PremiumBackground />
+          <RegistrationWizard
+            onRegisterComplete={(regResult) => {
+              setAuthScreen("login");
+            }}
+            onCancel={() => {
+              setIsLandingActive(true);
+            }}
+          />
+        </div>
+      );
+    } else {
+      return (
+        <div className="relative min-h-screen w-full">
+          <PremiumBackground />
+          <Login
+            onLoginSuccess={(schoolData) => {
+              localStorage.setItem("active_school_session", JSON.stringify(schoolData));
+              setCurrentSchoolSession(schoolData);
+            }}
+            onOpenRegister={() => {
+              setAuthScreen("register");
+            }}
+          />
+        </div>
+      );
+    }
+  }
+
   return (
     <div className="h-screen w-screen bg-slate-50 flex flex-col md:flex-row relative text-slate-900 font-sans antialiased overflow-hidden selection:bg-slate-900 selection:text-white">
       {/* Mobile Header */}
       <header className="md:hidden bg-slate-900 text-white px-5 py-4 flex items-center justify-between border-b border-slate-800 shrink-0 z-40">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-indigo-500 rounded-lg flex items-center justify-center text-white font-bold text-xs">
-            {schoolInfo.name ? schoolInfo.name.charAt(0) : "S"}
-          </div>
+          {schoolInfo.logo ? (
+            <img
+              src={schoolInfo.logo}
+              alt="SJ Scheduler AI Logo"
+              className="w-7 h-7 object-contain rounded-lg"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <div className="w-7 h-7 bg-indigo-500 rounded-lg flex items-center justify-center text-white font-bold text-xs">
+              {schoolInfo.name ? schoolInfo.name.charAt(0) : "S"}
+            </div>
+          )}
           <span className="font-semibold tracking-tight text-sm text-white">{schoolInfo.name}</span>
         </div>
         <button
@@ -272,9 +682,18 @@ export default function App() {
           {/* Brand/Logo Header */}
           <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900 shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md shadow-indigo-600/35">
-                {schoolInfo.name ? schoolInfo.name.charAt(0) : "S"}
-              </div>
+              {schoolInfo.logo ? (
+                <img
+                  src={schoolInfo.logo}
+                  alt="SJ Scheduler AI Logo"
+                  className="w-8 h-8 object-contain rounded-lg shadow-md shadow-indigo-600/35"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md shadow-indigo-600/35">
+                  {schoolInfo.name ? schoolInfo.name.charAt(0) : "S"}
+                </div>
+              )}
               <div>
                 <h2 className="font-semibold text-white text-base tracking-tight leading-none truncate max-w-[130px]">
                   Scheduler AI
@@ -318,7 +737,25 @@ export default function App() {
           </nav>
 
           {/* AI Engine Status Indicator */}
-          <div className="p-4 border-t border-slate-800 bg-slate-900/40 shrink-0">
+          <div className="p-4 border-t border-slate-800 bg-slate-900/40 shrink-0 space-y-2">
+            <button
+              onClick={() => setIsLandingActive(true)}
+              className="w-full px-3 py-2 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all flex items-center gap-3 cursor-pointer"
+            >
+              <Globe className="w-4 h-4 text-slate-400" />
+              <span>Public Portal</span>
+            </button>
+            <button
+              onClick={() => {
+                localStorage.removeItem("active_school_session");
+                setCurrentSchoolSession(null);
+                setIsLandingActive(true);
+              }}
+              className="w-full px-3 py-2 rounded-lg text-xs font-bold bg-slate-800 hover:bg-rose-950/40 hover:text-rose-400 text-slate-300 transition-all flex items-center gap-3 cursor-pointer border border-slate-800"
+            >
+              <LogOut className="w-4 h-4 text-slate-400" />
+              <span>Sign Out Console</span>
+            </button>
             <div className="flex items-center gap-2 p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/30">
               <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
               <span className="text-xs font-medium text-indigo-400">AI Engine Active</span>
