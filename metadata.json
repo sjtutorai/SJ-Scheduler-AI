@@ -1,0 +1,6 @@
+{
+  "name": "School Scheduler AI",
+  "description": "AI-Powered School Timetable & Examination Management System with conflict-free generation, seating arrangements, and invigilator assignment.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
